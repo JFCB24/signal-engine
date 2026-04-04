@@ -21,24 +21,60 @@ HORIZONTES = {
     "1 mes":    30,
 }
 
-def analizar_activo(ticker, perfil):
+# ── Setup automático ─────────────────────────────────────────
+def preparar_sistema():
+    import yfinance as yf
+    from config.settings import TICKER
+
+    ticker_safe = TICKER.replace("-", "_")
+
+    if not os.path.exists(f"data/raw/{ticker_safe}_precios.csv"):
+        from data.collectors.price_collector import descargar_precios
+        descargar_precios()
+
+    if not os.path.exists(f"data/processed/{ticker_safe}_features.csv"):
+        from data.processors.feature_engineering import procesar_datos
+        procesar_datos()
+
+    if not os.path.exists("models/modelo_lgbm.pkl"):
+        from models.train import entrenar_modelo
+        entrenar_modelo()
+
+# ── Verificar activos disponibles (cache 1 hora) ─────────────
+@st.cache_data(ttl=3600)
+def verificar_activos():
+    import yfinance as yf
+    resultado = {}
+    for mercado, activos in ACTIVOS.items():
+        resultado[mercado] = {}
+        for nombre, ticker in activos.items():
+            try:
+                datos = yf.download(
+                    ticker, period="1mo", interval="1d",
+                    auto_adjust=True, progress=False
+                )
+                resultado[mercado][nombre] = len(datos) >= 5
+            except:
+                resultado[mercado][nombre] = False
+    return resultado
+
+# ── Análisis principal ───────────────────────────────────────
+def analizar_activo(ticker, activo_nombre, perfil):
     with st.spinner("Descargando datos históricos..."):
         import yfinance as yf
 
-        datos = yf.download(ticker, period="3y", interval="1d",
-                            auto_adjust=True, progress=False)
-        if datos.empty:
-            st.error(f"No se encontraron datos para {ticker}. "
-                     "Este activo puede no estar disponible en Yahoo Finance.")
+        datos = yf.download(
+            ticker, period="3y", interval="1d",
+            auto_adjust=True, progress=False
+        )
+
+        if datos.empty or len(datos) < 50:
+            st.warning(f"⚠️ **{activo_nombre}** no tiene suficientes datos.")
+            st.info("Elige un activo marcado con ✓ en el selector.")
             return None
 
         datos.columns = ["open", "high", "low", "close", "volume"]
         datos.dropna(inplace=True)
-
-        if len(datos) < 50:
-            st.error("No hay suficientes datos históricos para este activo.")
-            return None
-
         df = calcular_features(datos.copy())
 
     with st.spinner("Analizando noticias con FinBERT..."):
@@ -47,7 +83,7 @@ def analizar_activo(ticker, perfil):
 
     ruta_modelo = "models/modelo_lgbm.pkl"
     if not os.path.exists(ruta_modelo):
-        st.error("Modelo no encontrado. Ejecuta primero: py -m models.train")
+        st.error("Modelo no encontrado. Espera que el sistema se inicialice.")
         return None
 
     with open(ruta_modelo, "rb") as f:
@@ -127,30 +163,50 @@ def analizar_activo(ticker, perfil):
     }
 
 
+# ── Inicializar sistema ──────────────────────────────────────
+with st.spinner("Iniciando sistema..."):
+    preparar_sistema()
+
 # ── Interfaz ─────────────────────────────────────────────────
 st.title("📈 Signal Engine")
 st.caption("Herramienta educativa de análisis — no es asesoría financiera")
 st.divider()
 
+# Verificar activos
+with st.spinner("Verificando activos disponibles..."):
+    disponibles = verificar_activos()
+
 # Selectores
 col1, col2, col3 = st.columns(3)
+
 with col1:
     mercado = st.selectbox("Mercado", list(ACTIVOS.keys()))
+
 with col2:
-    activo_nombre = st.selectbox("Activo", list(ACTIVOS[mercado].keys()))
+    activos_con_estado = {
+        f"{'✓' if disponibles[mercado].get(n, False) else '✗'} {n}": t
+        for n, t in ACTIVOS[mercado].items()
+    }
+    seleccion = st.selectbox("Activo", list(activos_con_estado.keys()))
+    activo_nombre = seleccion.replace("✓ ", "").replace("✗ ", "")
+
 with col3:
     perfil = st.selectbox("Tu perfil", ["Conservador", "Moderado", "Agresivo"])
 
 horizonte = st.selectbox("Horizonte de tiempo", list(HORIZONTES.keys()))
 ticker_seleccionado = ACTIVOS[mercado][activo_nombre]
+disponible = disponibles[mercado].get(activo_nombre, False)
 
-st.caption(f"Ticker: `{ticker_seleccionado}`")
+st.caption(f"Ticker: `{ticker_seleccionado}` — "
+           f"{'✓ Disponible' if disponible else '✗ Sin datos suficientes'}")
+
 st.divider()
 
-# Botón
-if st.button("🔍 Analizar ahora", use_container_width=True):
+# ── Botón ────────────────────────────────────────────────────
+if st.button("🔍 Analizar ahora", use_container_width=True,
+             disabled=not disponible):
 
-    resultado = analizar_activo(ticker_seleccionado, perfil)
+    resultado = analizar_activo(ticker_seleccionado, activo_nombre, perfil)
 
     if resultado:
         if resultado["señal"] == "ALCISTA":
@@ -163,7 +219,6 @@ if st.button("🔍 Analizar ahora", use_container_width=True):
             color = "gray"
             icono = "◆"
 
-        # Señal principal
         st.markdown(f"""
         <div style='text-align:center; padding:1.5rem;
                     border-radius:12px; border:1.5px solid {color};
@@ -180,7 +235,6 @@ if st.button("🔍 Analizar ahora", use_container_width=True):
         </div>
         """, unsafe_allow_html=True)
 
-        # Métricas
         c1, c2, c3, c4 = st.columns(4)
         with c1:
             st.metric("Prob. alcista", f"{resultado['prob_alcista']:.1%}",
@@ -195,8 +249,6 @@ if st.button("🔍 Analizar ahora", use_container_width=True):
                       delta=f"{resultado['sentimiento_score']:+.2f}")
 
         st.divider()
-
-        # Factores
         st.subheader("Factores de la señal")
 
         def mostrar_factor(nombre, valor, umbral_bajo, umbral_alto, desc):
@@ -216,15 +268,11 @@ if st.button("🔍 Analizar ahora", use_container_width=True):
                        "Alto = mayor interés del mercado →")
 
         st.divider()
-
-        # Noticias
         st.subheader("Noticias analizadas")
         for titular in resultado["titulares"]:
             st.markdown(f"- {titular}")
 
         st.divider()
-
-        # Recomendación
         if resultado["rec_color"] == "success":
             st.success(f"✅ {resultado['recomendacion']}")
         elif resultado["rec_color"] == "error":
@@ -232,7 +280,6 @@ if st.button("🔍 Analizar ahora", use_container_width=True):
         else:
             st.warning(f"⏳ {resultado['recomendacion']}")
 
-        # Gráfico
         st.subheader("Probabilidades")
         prob_df = pd.DataFrame({
             "Dirección": ["Alcista ▲", "Bajista ▼"],
@@ -249,11 +296,15 @@ if st.button("🔍 Analizar ahora", use_container_width=True):
         )
 
 else:
-    st.info("Selecciona un mercado y un activo, luego presiona Analizar.")
-    st.markdown("""
-    **¿Cómo funciona?**
-    1. Descarga datos históricos en tiempo real
-    2. Calcula indicadores técnicos (RSI, MACD, Bollinger Bands)
-    3. Analiza noticias recientes con FinBERT
-    4. Genera una señal con probabilidad ajustada a tu perfil
-    """)
+    if not disponible:
+        st.warning(f"⚠️ **{activo_nombre}** no tiene datos suficientes. "
+                   "Elige un activo marcado con ✓.")
+    else:
+        st.info("Selecciona un activo y presiona Analizar para ver la señal.")
+        st.markdown("""
+        **¿Cómo funciona?**
+        1. Descarga datos históricos en tiempo real
+        2. Calcula indicadores técnicos (RSI, MACD, Bollinger Bands)
+        3. Analiza noticias recientes con FinBERT
+        4. Genera una señal con probabilidad ajustada a tu perfil
+        """)
