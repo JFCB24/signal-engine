@@ -16,80 +16,171 @@ FEATURES = [
     "atr",
 ]
 
-# ── Catálogo completo de activos ────────────────────────────
 ACTIVOS = {
 
-    # Criptomonedas
     "🪙 Criptomonedas": {
-        "Bitcoin":  "BTC-USD",
-        "Ethereum": "ETH-USD",
-        "Solana":   "SOL-USD",
-        "BNB":      "BNB-USD",
-        "Cardano":  "ADA-USD",
+        "Bitcoin":          "BTC-USD",
+        "Ethereum":         "ETH-USD",
+        "Solana":           "SOL-USD",
+        "BNB":              "BNB-USD",
+        "Cardano":          "ADA-USD",
+        "XRP":              "XRP-USD",
+        "Avalanche":        "AVAX-USD",
+        "Polkadot":         "DOT-USD",
     },
 
-    # Acciones USA
     "🇺🇸 Estados Unidos": {
-        "Apple":    "AAPL",
-        "Tesla":    "TSLA",
-        "Microsoft":"MSFT",
-        "Google":   "GOOGL",
-        "Amazon":   "AMZN",
+        # Tecnología
+        "Apple":            "AAPL",
+        "Microsoft":        "MSFT",
+        "Google":           "GOOGL",
+        "Amazon":           "AMZN",
+        "Meta":             "META",
+        "Tesla":            "TSLA",
+        "NVIDIA":           "NVDA",
+        # Finanzas
+        "JPMorgan":         "JPM",
+        "Goldman Sachs":    "GS",
+        "Berkshire":        "BRK-B",
+        # Energia
+        "ExxonMobil":       "XOM",
+        "Chevron":          "CVX",
+        # ETFs índices
+        "S&P 500 ETF":      "SPY",
+        "Nasdaq ETF":       "QQQ",
+        "Dow Jones ETF":    "DIA",
     },
 
-    # Colombia — BVC
-    "🇨🇴 Colombia (BVC)": {
+    "🇨🇴 Colombia": {
+        # ADR en NYSE — datos confiables en Yahoo Finance
         "Bancolombia":      "CIB",
         "Ecopetrol":        "EC",
-        "Grupo Nutresa":    "NUTRESA.CL",
-        "Grupo Sura":       "GRUPOSURA.CL",
-        "Cemargos":         "CEMARGOS.CL",
+        # ETF Colombia
+        "ETF Colombia":     "GXG",
     },
 
-    # México — BMV
-    "🇲🇽 México (BMV)": {
-        "America Movil":    "AMXL.MX",
-        "FEMSA":            "FEMSAUBD.MX",
-        "Cemex":            "CEMEXCPO.MX",
-        "Grupo Bimbo":      "BIMBOA.MX",
-        "Walmex":           "WALMEX.MX",
+    "🇲🇽 México": {
+        # ADR en NYSE
+        "America Movil":    "AMX",
+        "Cemex":            "CX",
+        "Coca-Cola FEMSA":  "KOF",
+        "Grupo Televisa":   "TV",
+        "Grupo TMM":        "GTMAY",
+        # ETF México
+        "ETF México":       "EWW",
     },
 
-    # Brasil — B3
-    "🇧🇷 Brasil (B3)": {
+    "🇧🇷 Brasil": {
+        # ADR en NYSE
         "Petrobras":        "PBR",
         "Vale":             "VALE",
         "Itau Unibanco":    "ITUB",
         "Bradesco":         "BBD",
         "Embraer":          "ERJ",
+        "Nubank":           "NU",
+        "MercadoLibre":     "MELI",
+        # ETF Brasil
+        "ETF Brasil":       "EWZ",
+    },
+
+    "🇦🇷 Argentina": {
+        # ADR en NYSE
+        "MercadoLibre":     "MELI",
+        "Globant":          "GLOB",
+        "Loma Negra":       "LOMA",
+        "Pampa Energia":    "PAM",
+        "YPF":              "YPF",
+        # ETF Argentina
+        "ETF Argentina":    "ARGT",
+    },
+
+    "🇨🇱 Chile": {
+        # ADR en NYSE
+        "Banco Chile":      "BCH",
+        "Banco Santander Chile": "BSAC",
+        "Enersis":          "ENIA",
+        "ETF Chile":        "ECH",
+    },
+
+    "🌍 Materias primas": {
+        "Oro":              "GLD",
+        "Plata":            "SLV",
+        "Petróleo WTI":     "USO",
+        "Gas Natural":      "UNG",
+        "Cobre":            "CPER",
+        "Maíz":             "CORN",
+        "Soja":             "SOYB",
+        "Trigo":            "WEAT",
     },
 }
 
-# Términos de búsqueda para noticias por ticker
 NOTICIAS_TERMINOS = {
-    "BTC-USD":          "Bitcoin",
-    "ETH-USD":          "Ethereum",
-    "SOL-USD":          "Solana crypto",
-    "BNB-USD":          "Binance BNB crypto",
-    "ADA-USD":          "Cardano ADA crypto",
-    "AAPL":             "Apple stock",
-    "TSLA":             "Tesla stock",
-    "MSFT":             "Microsoft stock",
-    "GOOGL":            "Google Alphabet stock",
-    "AMZN":             "Amazon stock",
-    "CIB":              "Bancolombia",
-    "EC":               "Ecopetrol Colombia",
-    "NUTRESA.CL":       "Grupo Nutresa Colombia",
-    "GRUPOSURA.CL":     "Grupo Sura Colombia",
-    "CEMARGOS.CL":      "Cemargos Colombia",
-    "AMXL.MX":          "America Movil Mexico",
-    "FEMSAUBD.MX":      "FEMSA Mexico",
-    "CEMEXCPO.MX":      "Cemex Mexico",
-    "BIMBOA.MX":        "Grupo Bimbo Mexico",
-    "WALMEX.MX":        "Walmart Mexico Walmex",
-    "PBR":              "Petrobras Brazil",
-    "VALE":             "Vale mining Brazil",
-    "ITUB":             "Itau Unibanco Brazil",
-    "BBD":              "Bradesco Brazil",
-    "ERJ":              "Embraer Brazil",
+    # Criptos
+    "BTC-USD":      "Bitcoin",
+    "ETH-USD":      "Ethereum",
+    "SOL-USD":      "Solana crypto",
+    "BNB-USD":      "Binance BNB",
+    "ADA-USD":      "Cardano ADA",
+    "XRP-USD":      "XRP Ripple",
+    "AVAX-USD":     "Avalanche crypto",
+    "DOT-USD":      "Polkadot crypto",
+    # USA Tech
+    "AAPL":         "Apple stock",
+    "MSFT":         "Microsoft stock",
+    "GOOGL":        "Google Alphabet",
+    "AMZN":         "Amazon stock",
+    "META":         "Meta Facebook stock",
+    "TSLA":         "Tesla stock",
+    "NVDA":         "NVIDIA stock",
+    # USA Finanzas
+    "JPM":          "JPMorgan Chase",
+    "GS":           "Goldman Sachs",
+    "BRK-B":        "Berkshire Hathaway",
+    # USA Energia
+    "XOM":          "ExxonMobil",
+    "CVX":          "Chevron",
+    # ETFs
+    "SPY":          "S&P 500 market",
+    "QQQ":          "Nasdaq technology",
+    "DIA":          "Dow Jones market",
+    # Colombia
+    "CIB":          "Bancolombia",
+    "EC":           "Ecopetrol Colombia oil",
+    "GXG":          "Colombia market economy",
+    # México
+    "AMX":          "America Movil Mexico",
+    "CX":           "Cemex Mexico construction",
+    "KOF":          "Coca Cola FEMSA Mexico",
+    "TV":           "Televisa Mexico media",
+    "GTMAY":        "Grupo TMM Mexico",
+    "EWW":          "Mexico market economy",
+    # Brasil
+    "PBR":          "Petrobras Brazil oil",
+    "VALE":         "Vale mining Brazil",
+    "ITUB":         "Itau Unibanco Brazil",
+    "BBD":          "Bradesco Brazil bank",
+    "ERJ":          "Embraer Brazil aerospace",
+    "NU":           "Nubank Brazil fintech",
+    "MELI":         "MercadoLibre ecommerce",
+    "EWZ":          "Brazil market economy",
+    # Argentina
+    "GLOB":         "Globant Argentina tech",
+    "LOMA":         "Loma Negra Argentina cement",
+    "PAM":          "Pampa Energia Argentina",
+    "YPF":          "YPF Argentina oil",
+    "ARGT":         "Argentina market economy",
+    # Chile
+    "BCH":          "Banco de Chile",
+    "BSAC":         "Banco Santander Chile",
+    "ENIA":         "Enersis Chile energy",
+    "ECH":          "Chile market economy",
+    # Materias primas
+    "GLD":          "gold price commodities",
+    "SLV":          "silver price commodities",
+    "USO":          "crude oil WTI price",
+    "UNG":          "natural gas price",
+    "CPER":         "copper price commodities",
+    "CORN":         "corn price agriculture",
+    "SOYB":         "soybean price agriculture",
+    "WEAT":         "wheat price agriculture",
 }
