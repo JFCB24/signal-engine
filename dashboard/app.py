@@ -77,6 +77,26 @@ def analizar_activo(ticker, activo_nombre, perfil):
 
     with open(ruta_modelo, "rb") as f:
         modelo = pickle.load(f)
+        
+        # Guardar señal en historial
+    historial_path = "data/signals_history.csv"
+    nueva_fila = {
+        "fecha": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
+        "ticker": ticker,
+        "activo": activo_nombre,
+        "señal": "pendiente",
+        "prob_alcista": round(prob_alcista, 4),
+        "prob_bajista": round(prob_bajista, 4),
+        "precio_entrada": round(row["close"], 2),
+    }
+    if os.path.exists(historial_path):
+        historial = pd.read_csv(historial_path)
+        historial = pd.concat([historial, pd.DataFrame([nueva_fila])],
+                              ignore_index=True)
+    else:
+        historial = pd.DataFrame([nueva_fila])
+    os.makedirs("data", exist_ok=True)
+    historial.to_csv(historial_path, index=False)
 
     features_disponibles = [f for f in FEATURES if f in df.columns]
     ultima_fila = df[features_disponibles].iloc[-1:]
@@ -338,9 +358,32 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
                              resultado["prob_bajista"]]
         })
         st.bar_chart(prob_df.set_index("Dirección"))
+        
+    with open(ruta_modelo, "rb") as f:
+        modelo = pickle.load(f)
 
-        st.divider()
-        st.warning(
+    # Guardar señal en historial
+    historial_path = "data/signals_history.csv"
+    nueva_fila = {
+        "fecha": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
+        "ticker": ticker,
+        "activo": activo_nombre,
+        "señal": "pendiente",
+        "prob_alcista": round(prob_alcista, 4),
+        "prob_bajista": round(prob_bajista, 4),
+        "precio_entrada": round(row["close"], 2),
+    }
+    if os.path.exists(historial_path):
+        historial = pd.read_csv(historial_path)
+        historial = pd.concat([historial, pd.DataFrame([nueva_fila])],
+                              ignore_index=True)
+    else:
+        historial = pd.DataFrame([nueva_fila])
+    os.makedirs("data", exist_ok=True)
+    historial.to_csv(historial_path, index=False)
+
+    st.divider()
+    st.warning(
             "⚠️ LatixIA es una herramienta educativa y no constituye asesoría "
             "financiera. Las señales se basan en patrones históricos y no "
             "garantizan resultados futuros. Investiga siempre por tu cuenta."
