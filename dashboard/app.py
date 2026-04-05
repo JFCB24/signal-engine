@@ -156,16 +156,40 @@ with st.spinner("Iniciando LatixIA..."):
 
 # ── Header ───────────────────────────────────────────────────
 st.markdown("""
-<div style='text-align:center; padding: 1rem 0 0.5rem;'>
-    <h1 style='font-size:2.2rem; font-weight:700; margin:0;'>
-        📈 LatixIA
-    </h1>
-    <p style='color:gray; font-size:14px; margin:4px 0 0;'>
-        Inteligencia Artificial para mercados latinoamericanos
-    </p>
-    <p style='color:#00C896; font-size:12px; font-style:italic; margin:2px 0 0;'>
-        Invierte diferente. Invierte inteligente.
-    </p>
+<div style='text-align:center; padding: 1.5rem 0 0.5rem;'>
+    <div style='display:inline-block; background:#0D1B2A;
+                border-radius:16px; padding:1.2rem 2.5rem;
+                margin-bottom:1rem;'>
+        <div style='display:flex; align-items:center;
+                    justify-content:center; gap:16px;'>
+            <svg width="48" height="48" viewBox="0 0 48 48">
+                <rect x="4" y="20" width="6" height="16" rx="1.5" fill="#1A6FFF"/>
+                <line x1="7" y1="14" x2="7" y2="20" stroke="#1A6FFF" stroke-width="1.5"/>
+                <line x1="7" y1="36" x2="7" y2="42" stroke="#1A6FFF" stroke-width="1.5"/>
+                <rect x="14" y="12" width="6" height="22" rx="1.5" fill="#00C896"/>
+                <line x1="17" y1="6" x2="17" y2="12" stroke="#00C896" stroke-width="1.5"/>
+                <line x1="17" y1="34" x2="17" y2="40" stroke="#00C896" stroke-width="1.5"/>
+                <rect x="24" y="16" width="6" height="14" rx="1.5" fill="#1A6FFF"/>
+                <line x1="27" y1="10" x2="27" y2="16" stroke="#1A6FFF" stroke-width="1.5"/>
+                <line x1="27" y1="30" x2="27" y2="38" stroke="#1A6FFF" stroke-width="1.5"/>
+                <rect x="34" y="8" width="6" height="24" rx="1.5" fill="#00C896"/>
+                <line x1="37" y1="2" x2="37" y2="8" stroke="#00C896" stroke-width="1.5"/>
+                <line x1="37" y1="32" x2="37" y2="40" stroke="#00C896" stroke-width="1.5"/>
+            </svg>
+            <div style='text-align:left;'>
+                <div style='font-size:2rem; font-weight:700;
+                            color:#FFFFFF; letter-spacing:2px;
+                            line-height:1;'>LATIX</div>
+                <div style='font-size:10px; color:#00C896;
+                            letter-spacing:4px;'>INTELIGENCIA ARTIFICIAL</div>
+            </div>
+        </div>
+        <div style='color:#FFFFFF; font-size:13px;
+                    margin-top:10px; opacity:0.85;
+                    font-style:italic;'>
+            Invierte diferente. Invierte inteligente.
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -216,7 +240,6 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
             color = "gray"
             icono = "◆"
 
-        # Señal principal
         st.markdown(f"""
         <div style='text-align:center; padding:1.5rem;
                     border-radius:12px; border:1.5px solid {color};
@@ -233,7 +256,6 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
         </div>
         """, unsafe_allow_html=True)
 
-        # Métricas
         c1, c2, c3, c4 = st.columns(4)
         with c1:
             st.metric("Prob. alcista", f"{resultado['prob_alcista']:.1%}",
@@ -247,7 +269,6 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
                       resultado["sentimiento_etiqueta"].capitalize(),
                       delta=f"{resultado['sentimiento_score']:+.2f}")
 
-        # Gráfico de precios histórico
         st.divider()
         st.subheader("📊 Precio histórico — últimos 3 meses")
 
@@ -331,21 +352,52 @@ else:
                    "Elige un activo marcado con ✓.")
     else:
         st.markdown("""
-        <div style='text-align:center; padding: 2rem 0;'>
+        <div style='text-align:center; padding:1rem 0 2rem;'>
             <p style='font-size:16px; color:gray;'>
-                Selecciona un mercado y un activo, luego presiona Analizar
+                Selecciona un mercado y un activo, luego presiona
+                <strong>Analizar</strong>
             </p>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("**¿Cómo funciona LatixIA?**")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.info("📥 **Datos reales**\nDescarga precios históricos en tiempo real de Yahoo Finance")
-            st.info("🧠 **Modelo IA**\nLightGBM entrenado con 3 años de datos históricos")
-        with col2:
-            st.info("📰 **Noticias**\nAnaliza sentimiento de noticias financieras recientes")
-            st.info("🌎 **Latam**\nCubre Colombia, México, Brasil, Argentina y criptos")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.metric("Activos cubiertos", "40+")
+        with c2:
+            st.metric("Mercados", "7")
+        with c3:
+            st.metric("Años de datos", "3")
 
         st.divider()
-        st.caption("LatixIA · Invierte diferente. Invierte inteligente. · Herramienta educativa")
+        st.markdown("#### ¿Cómo funciona?")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.success("📥 **Datos reales**\n\nDescarga precios históricos en tiempo real de Yahoo Finance")
+            st.success("🧠 **Modelo IA**\n\nLightGBM entrenado con 3 años de datos históricos")
+        with col2:
+            st.info("📰 **Análisis de noticias**\n\nDetecta sentimiento positivo o negativo en titulares financieros")
+            st.info("🌎 **Mercados globales**\n\nUSA, Latam, criptos y materias primas")
+
+        st.divider()
+        st.markdown("#### Mercados disponibles")
+
+        m1, m2, m3, m4 = st.columns(4)
+        with m1:
+            st.markdown("🪙 **Criptos**\nBTC, ETH, SOL, BNB, ADA")
+        with m2:
+            st.markdown("🇺🇸 **USA**\nApple, Tesla, NVIDIA, Google")
+        with m3:
+            st.markdown("🌎 **Latam**\nColombia, México, Brasil, Argentina")
+        with m4:
+            st.markdown("🌍 **Materias primas**\nOro, Plata, Petróleo, Trigo")
+
+        st.divider()
+        st.markdown("""
+        <div style='text-align:center; padding:0.5rem 0;'>
+            <p style='font-size:12px; color:gray;'>
+                ⚠️ LatixIA es una herramienta educativa — no constituye
+                asesoría financiera
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
