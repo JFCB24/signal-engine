@@ -10,7 +10,7 @@ from data.processors.feature_engineering import calcular_features
 from data.collectors.news_collector import obtener_noticias, analizar_sentimiento
 
 st.set_page_config(
-    page_title="Signal Engine",
+    page_title="LatixIA — Señales de Inversión",
     page_icon="📈",
     layout="centered"
 )
@@ -21,26 +21,19 @@ HORIZONTES = {
     "1 mes":    30,
 }
 
-# ── Setup automático ─────────────────────────────────────────
 def preparar_sistema():
-    import yfinance as yf
     from config.settings import TICKER
-
     ticker_safe = TICKER.replace("-", "_")
-
     if not os.path.exists(f"data/raw/{ticker_safe}_precios.csv"):
         from data.collectors.price_collector import descargar_precios
         descargar_precios()
-
     if not os.path.exists(f"data/processed/{ticker_safe}_features.csv"):
         from data.processors.feature_engineering import procesar_datos
         procesar_datos()
-
     if not os.path.exists("models/modelo_lgbm.pkl"):
         from models.train import entrenar_modelo
         entrenar_modelo()
 
-# ── Verificar activos disponibles (cache 1 hora) ─────────────
 @st.cache_data(ttl=3600)
 def verificar_activos():
     import yfinance as yf
@@ -58,32 +51,28 @@ def verificar_activos():
                 resultado[mercado][nombre] = False
     return resultado
 
-# ── Análisis principal ───────────────────────────────────────
 def analizar_activo(ticker, activo_nombre, perfil):
     with st.spinner("Descargando datos históricos..."):
         import yfinance as yf
-
         datos = yf.download(
             ticker, period="3y", interval="1d",
             auto_adjust=True, progress=False
         )
-
         if datos.empty or len(datos) < 50:
             st.warning(f"⚠️ **{activo_nombre}** no tiene suficientes datos.")
             st.info("Elige un activo marcado con ✓ en el selector.")
             return None
-
         datos.columns = ["open", "high", "low", "close", "volume"]
         datos.dropna(inplace=True)
         df = calcular_features(datos.copy())
 
-    with st.spinner("Analizando noticias con FinBERT..."):
+    with st.spinner("Analizando noticias..."):
         titulares = obtener_noticias(ticker)
         score_sentimiento, etiqueta_sentimiento = analizar_sentimiento(titulares)
 
     ruta_modelo = "models/modelo_lgbm.pkl"
     if not os.path.exists(ruta_modelo):
-        st.error("Modelo no encontrado. Espera que el sistema se inicialice.")
+        st.error("Modelo no encontrado.")
         return None
 
     with open(ruta_modelo, "rb") as f:
@@ -108,10 +97,8 @@ def analizar_activo(ticker, activo_nombre, perfil):
 
     señal_dominante = 1 if prob_alcista > prob_bajista else -1
     consistencia = sum(1 for s in señales if s == señal_dominante) / len(señales)
-
     atr_norm = row["atr"] / row["close"]
     estabilidad = max(0, 1 - (atr_norm * 20))
-
     confianza_num = (max(prob_alcista, prob_bajista) * 0.5 +
                      consistencia * 0.3 +
                      estabilidad * 0.2)
@@ -163,25 +150,35 @@ def analizar_activo(ticker, activo_nombre, perfil):
     }
 
 
-# ── Inicializar sistema ──────────────────────────────────────
-with st.spinner("Iniciando sistema..."):
+# ── Inicializar ──────────────────────────────────────────────
+with st.spinner("Iniciando LatixIA..."):
     preparar_sistema()
 
-# ── Interfaz ─────────────────────────────────────────────────
-st.title("📈 Signal Engine")
-st.caption("Herramienta educativa de análisis — no es asesoría financiera")
+# ── Header ───────────────────────────────────────────────────
+st.markdown("""
+<div style='text-align:center; padding: 1rem 0 0.5rem;'>
+    <h1 style='font-size:2.2rem; font-weight:700; margin:0;'>
+        📈 LatixIA
+    </h1>
+    <p style='color:gray; font-size:14px; margin:4px 0 0;'>
+        Inteligencia Artificial para mercados latinoamericanos
+    </p>
+    <p style='color:#00C896; font-size:12px; font-style:italic; margin:2px 0 0;'>
+        Invierte diferente. Invierte inteligente.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
 st.divider()
 
-# Verificar activos
+# ── Verificar activos ────────────────────────────────────────
 with st.spinner("Verificando activos disponibles..."):
     disponibles = verificar_activos()
 
-# Selectores
+# ── Selectores ───────────────────────────────────────────────
 col1, col2, col3 = st.columns(3)
-
 with col1:
     mercado = st.selectbox("Mercado", list(ACTIVOS.keys()))
-
 with col2:
     activos_con_estado = {
         f"{'✓' if disponibles[mercado].get(n, False) else '✗'} {n}": t
@@ -189,7 +186,6 @@ with col2:
     }
     seleccion = st.selectbox("Activo", list(activos_con_estado.keys()))
     activo_nombre = seleccion.replace("✓ ", "").replace("✗ ", "")
-
 with col3:
     perfil = st.selectbox("Tu perfil", ["Conservador", "Moderado", "Agresivo"])
 
@@ -199,6 +195,7 @@ disponible = disponibles[mercado].get(activo_nombre, False)
 
 st.caption(f"Ticker: `{ticker_seleccionado}` — "
            f"{'✓ Disponible' if disponible else '✗ Sin datos suficientes'}")
+st.caption(f"Datos actualizados: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}")
 
 st.divider()
 
@@ -219,6 +216,7 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
             color = "gray"
             icono = "◆"
 
+        # Señal principal
         st.markdown(f"""
         <div style='text-align:center; padding:1.5rem;
                     border-radius:12px; border:1.5px solid {color};
@@ -226,7 +224,7 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
             <div style='font-size:13px; color:gray; margin-bottom:4px;'>
                 {activo_nombre} · {horizonte} · Perfil {perfil}
             </div>
-            <div style='font-size:2.5rem; font-weight:600; color:{color};'>
+            <div style='font-size:2.5rem; font-weight:700; color:{color};'>
                 {icono} {resultado["señal"]}
             </div>
             <div style='font-size:13px; color:gray; margin-top:4px;'>
@@ -235,6 +233,7 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
         </div>
         """, unsafe_allow_html=True)
 
+        # Métricas
         c1, c2, c3, c4 = st.columns(4)
         with c1:
             st.metric("Prob. alcista", f"{resultado['prob_alcista']:.1%}",
@@ -247,6 +246,37 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
             st.metric("Sentimiento",
                       resultado["sentimiento_etiqueta"].capitalize(),
                       delta=f"{resultado['sentimiento_score']:+.2f}")
+
+        # Gráfico de precios histórico
+        st.divider()
+        st.subheader("📊 Precio histórico — últimos 3 meses")
+
+        import yfinance as yf
+        precios = yf.download(
+            ticker_seleccionado,
+            period="3mo",
+            interval="1d",
+            auto_adjust=True,
+            progress=False
+        )
+
+        if not precios.empty:
+            precios.columns = ["open", "high", "low", "close", "volume"]
+            precio_chart = precios[["close"]].copy()
+            precio_chart.columns = ["Precio de cierre"]
+            st.line_chart(precio_chart)
+
+            cm1, cm2, cm3 = st.columns(3)
+            with cm1:
+                st.metric("Mínimo 3 meses",
+                          f"${precios['close'].min():,.2f}")
+            with cm2:
+                st.metric("Máximo 3 meses",
+                          f"${precios['close'].max():,.2f}")
+            with cm3:
+                cambio = ((precios['close'].iloc[-1] - precios['close'].iloc[0])
+                          / precios['close'].iloc[0] * 100)
+                st.metric("Variación 3 meses", f"{cambio:+.1f}%")
 
         st.divider()
         st.subheader("Factores de la señal")
@@ -290,7 +320,7 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
 
         st.divider()
         st.warning(
-            "⚠️ Esta herramienta es educativa y no constituye asesoría "
+            "⚠️ LatixIA es una herramienta educativa y no constituye asesoría "
             "financiera. Las señales se basan en patrones históricos y no "
             "garantizan resultados futuros. Investiga siempre por tu cuenta."
         )
@@ -300,11 +330,22 @@ else:
         st.warning(f"⚠️ **{activo_nombre}** no tiene datos suficientes. "
                    "Elige un activo marcado con ✓.")
     else:
-        st.info("Selecciona un activo y presiona Analizar para ver la señal.")
         st.markdown("""
-        **¿Cómo funciona?**
-        1. Descarga datos históricos en tiempo real
-        2. Calcula indicadores técnicos (RSI, MACD, Bollinger Bands)
-        3. Analiza noticias recientes con FinBERT
-        4. Genera una señal con probabilidad ajustada a tu perfil
-        """)
+        <div style='text-align:center; padding: 2rem 0;'>
+            <p style='font-size:16px; color:gray;'>
+                Selecciona un mercado y un activo, luego presiona Analizar
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("**¿Cómo funciona LatixIA?**")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.info("📥 **Datos reales**\nDescarga precios históricos en tiempo real de Yahoo Finance")
+            st.info("🧠 **Modelo IA**\nLightGBM entrenado con 3 años de datos históricos")
+        with col2:
+            st.info("📰 **Noticias**\nAnaliza sentimiento de noticias financieras recientes")
+            st.info("🌎 **Latam**\nCubre Colombia, México, Brasil, Argentina y criptos")
+
+        st.divider()
+        st.caption("LatixIA · Invierte diferente. Invierte inteligente. · Herramienta educativa")
