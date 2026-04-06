@@ -86,7 +86,7 @@ def analizar_activo(ticker, activo_nombre, perfil):
         datos.dropna(inplace=True)
         df = calcular_features(datos.copy())
 
-    with st.spinner("Analizando noticias..."):
+    with st.spinner("Obteniendo noticias en tiempo real..."):
         titulares = obtener_noticias(ticker)
         score_sentimiento, etiqueta_sentimiento = analizar_sentimiento(titulares)
 
@@ -107,7 +107,6 @@ def analizar_activo(ticker, activo_nombre, perfil):
 
     row = df.iloc[-1]
 
-    # Guardar en historial después de tener las probabilidades
     guardar_historial(ticker, activo_nombre, prob_alcista,
                       prob_bajista, row["close"])
 
@@ -345,7 +344,7 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
                        "Alto = mayor interés del mercado →")
 
         st.divider()
-        st.subheader("Noticias analizadas")
+        st.subheader("📰 Noticias en tiempo real")
         for titular in resultado["titulares"]:
             st.markdown(f"- {titular}")
 
@@ -402,9 +401,9 @@ else:
 
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.metric("Activos cubiertos", "40+")
+            st.metric("Activos cubiertos", "50+")
         with c2:
-            st.metric("Mercados", "7")
+            st.metric("Mercados", "9")
         with c3:
             st.metric("Años de datos", "3")
 
@@ -416,20 +415,22 @@ else:
             st.success("📥 **Datos reales**\n\nDescarga precios históricos en tiempo real de Yahoo Finance")
             st.success("🧠 **Modelo IA**\n\nLightGBM entrenado con 3 años de datos históricos")
         with col2:
-            st.info("📰 **Análisis de noticias**\n\nDetecta sentimiento positivo o negativo en titulares financieros")
-            st.info("🌎 **Mercados globales**\n\nUSA, Latam, criptos y materias primas")
+            st.info("📰 **Noticias en tiempo real**\n\nRSS de Yahoo Finance y Google News actualizado diariamente")
+            st.info("🌎 **Mercados globales**\n\nUSA, China, Latam, criptos y materias primas")
 
         st.divider()
         st.markdown("#### Mercados disponibles")
 
-        m1, m2, m3, m4 = st.columns(4)
+        m1, m2, m3, m4, m5 = st.columns(5)
         with m1:
             st.markdown("🪙 **Criptos**\nBTC, ETH, SOL, BNB, ADA")
         with m2:
             st.markdown("🇺🇸 **USA**\nApple, Tesla, NVIDIA, Google")
         with m3:
-            st.markdown("🌎 **Latam**\nColombia, México, Brasil, Argentina")
+            st.markdown("🇨🇳 **China**\nAlibaba, Baidu, NIO, JD.com")
         with m4:
+            st.markdown("🌎 **Latam**\nColombia, México, Brasil, Argentina")
+        with m5:
             st.markdown("🌍 **Materias primas**\nOro, Plata, Petróleo, Trigo")
 
         st.divider()
