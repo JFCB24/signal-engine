@@ -118,3 +118,8 @@ Estudiante de Ingeniería de Datos — 17 años
 ## Disclaimer
 
 Este proyecto es una herramienta educativa. Las señales generadas se basan en patrones históricos y no garantizan resultados futuros. No tomes decisiones financieras basadas únicamente en esta herramienta. Siempre investiga por tu cuenta.
+## Licencia
+
+MIT License — © 2026 JFCB24
+
+Este proyecto es de código abierto bajo los términos de la licencia MIT.
