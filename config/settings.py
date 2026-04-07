@@ -50,6 +50,16 @@ ACTIVOS = {
         "Nasdaq ETF":       "QQQ",
         "Dow Jones ETF":    "DIA",
     },
+    "🇨🇳 China": {
+        "Alibaba":          "BABA",
+        "JD.com":           "JD",
+        "Baidu":            "BIDU",
+        "PDD Holdings":     "PDD",
+        "NIO":              "NIO",
+        "XPeng":            "XPEV",
+        "Li Auto":          "LI",
+        "ETF China":        "FXI",
+    },
 
     "🇨🇴 Colombia": {
         # ADR en NYSE — datos confiables en Yahoo Finance
