@@ -6,14 +6,46 @@ TRAIN_SPLIT = 0.80
 HORIZON_HOURS = 24
 
 FEATURES = [
+    # Indicadores básicos
     "rsi",
     "macd",
     "macd_signal",
+    "macd_hist",
     "bb_upper",
     "bb_lower",
     "bb_position",
     "volume_ratio",
     "atr",
+    # Tendencia
+    "tendencia",
+    "precio_vs_sma20",
+    "precio_vs_sma50",
+    "cruce_ema",
+    "tendencia_fuerza",
+    # Volumen avanzado
+    "obv_ratio",
+    "precio_vs_vwap",
+    "volume_spike",
+    # Temporalidad
+    "dia_semana",
+    "es_lunes",
+    "es_viernes",
+    "mes",
+    "es_enero",
+    "fin_de_mes",
+    "trimestre",
+    # Especulación / Momentum
+    "roc5",
+    "roc10",
+    "roc20",
+    "stoch_rsi",
+    "williams_r",
+    # Dirección
+    "dist_max_20",
+    "dist_min_20",
+    "momentum_5",
+    "momentum_10",
+    "momentum_20",
 ]
 
 ACTIVOS = {

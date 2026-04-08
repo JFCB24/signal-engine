@@ -10,7 +10,6 @@ from config.settings import TICKER, TRAIN_SPLIT, FEATURES
 
 def entrenar_modelo():
 
-    # Cargar datos procesados
     ruta = f"data/processed/{TICKER.replace('-', '_')}_features.csv"
 
     if not os.path.exists(ruta):
@@ -25,7 +24,9 @@ def entrenar_modelo():
     X = df[features_disponibles]
     y = df["label"]
 
-    # --- Walk-forward split (nunca mezclar futuro con pasado) ---
+    print(f"Features usados: {len(features_disponibles)}")
+
+    # Walk-forward split
     corte = int(len(df) * TRAIN_SPLIT)
     X_train, X_test = X.iloc[:corte], X.iloc[corte:]
     y_train, y_test = y.iloc[:corte], y.iloc[corte:]
@@ -33,24 +34,29 @@ def entrenar_modelo():
     print(f"Entrenamiento: {len(X_train)} filas")
     print(f"Prueba:        {len(X_test)} filas")
 
-    # --- Baseline (predecir siempre la clase mayoritaria) ---
+    # Baseline
     clase_mayoritaria = y_train.mode()[0]
     baseline_acc = (y_test == clase_mayoritaria).mean()
     print(f"\nBaseline (predecir siempre {clase_mayoritaria}): {baseline_acc:.1%}")
 
-    # --- Entrenar LightGBM ---
+    # Entrenar LightGBM con regularización para reducir overfitting
     print("\nEntrenando modelo LightGBM...")
     modelo = lgb.LGBMClassifier(
-        n_estimators=200,
-        learning_rate=0.05,
-        max_depth=4,
-        min_child_samples=20,
+        n_estimators=300,
+        learning_rate=0.02,
+        max_depth=3,
+        min_child_samples=40,
+        num_leaves=15,
+        subsample=0.8,
+        colsample_bytree=0.7,
+        reg_alpha=0.1,
+        reg_lambda=0.1,
         random_state=42,
         verbose=-1
     )
     modelo.fit(X_train, y_train)
 
-    # --- Evaluar modelo ---
+    # Evaluar
     acc_train = modelo.score(X_train, y_train)
     acc_test  = modelo.score(X_test, y_test)
 
@@ -62,9 +68,9 @@ def entrenar_modelo():
     if acc_test > baseline_acc:
         print(f"\n  El modelo SUPERA el baseline por {acc_test - baseline_acc:.1%}")
     else:
-        print(f"\n  El modelo NO supera el baseline — hay que mejorar features")
+        print(f"\n  El modelo NO supera el baseline — revisar features")
 
-    # --- Importancia de features ---
+    # Importancia de features
     print("\nImportancia de cada feature:")
     importancias = pd.Series(
         modelo.feature_importances_,
@@ -72,10 +78,11 @@ def entrenar_modelo():
     ).sort_values(ascending=False)
 
     for feature, valor in importancias.items():
-        barra = "█" * int(valor / importancias.max() * 20)
-        print(f"  {feature:<15} {barra} {valor}")
+        if valor > 0:
+            barra = "█" * int(valor / importancias.max() * 20)
+            print(f"  {feature:<20} {barra} {valor}")
 
-    # --- Guardar modelo ---
+    # Guardar modelo
     os.makedirs("models", exist_ok=True)
     ruta_modelo = "models/modelo_lgbm.pkl"
     with open(ruta_modelo, "wb") as f:
