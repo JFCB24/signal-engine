@@ -24,15 +24,35 @@ HORIZONTES = {
 def preparar_sistema():
     from config.settings import TICKER
     ticker_safe = TICKER.replace("-", "_")
+
+    # Versión del modelo — cambia este número cuando actualices features
+    VERSION = "v3"
+    version_path = f"models/version_{VERSION}.txt"
+
+    # Si la versión cambió borra todo y reentrena
+    if not os.path.exists(version_path):
+        for archivo in [
+            "models/modelo_lgbm.pkl",
+            f"data/raw/{ticker_safe}_precios.csv",
+            f"data/processed/{ticker_safe}_features.csv",
+        ]:
+            if os.path.exists(archivo):
+                os.remove(archivo)
+
     if not os.path.exists(f"data/raw/{ticker_safe}_precios.csv"):
         from data.collectors.price_collector import descargar_precios
         descargar_precios()
+
     if not os.path.exists(f"data/processed/{ticker_safe}_features.csv"):
         from data.processors.feature_engineering import procesar_datos
         procesar_datos()
+
     if not os.path.exists("models/modelo_lgbm.pkl"):
         from models.train import entrenar_modelo
         entrenar_modelo()
+        os.makedirs("models", exist_ok=True)
+        with open(version_path, "w") as f:
+            f.write(VERSION)
 
 @st.cache_data(ttl=3600)
 def verificar_activos():
