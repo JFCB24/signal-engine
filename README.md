@@ -2,7 +2,7 @@
 
 > Plataforma de inteligencia artificial que analiza datos del mercado y noticias financieras para generar señales de inversión con probabilidad.
 
-🔗 **[Ver aplicación en vivo](https://signal-engine-cgwfivvpvqotmbrqbvchhz.streamlit.app)**
+🔗 **[Ver aplicación en vivo](https://latixia.streamlit.app)**
 
 ---
 
