@@ -26,7 +26,7 @@ def preparar_sistema():
     ticker_safe = TICKER.replace("-", "_")
 
     # Versión del modelo — cambia este número cuando actualices features
-    VERSION = "v3"
+    VERSION = "v4"
     version_path = f"models/version_{VERSION}.txt"
 
     # Si la versión cambió borra todo y reentrena
