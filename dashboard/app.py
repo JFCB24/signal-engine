@@ -74,26 +74,6 @@ def verificar_activos():
                 resultado[mercado][nombre] = False
     return resultado
 
-def guardar_historial(ticker, activo_nombre, prob_alcista,
-                      prob_bajista, precio):
-    historial_path = "data/signals_history.csv"
-    nueva_fila = {
-        "fecha": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
-        "ticker": ticker,
-        "activo": activo_nombre,
-        "prob_alcista": round(prob_alcista, 4),
-        "prob_bajista": round(prob_bajista, 4),
-        "precio_entrada": round(precio, 2),
-    }
-    if os.path.exists(historial_path):
-        historial = pd.read_csv(historial_path)
-        historial = pd.concat([historial, pd.DataFrame([nueva_fila])],
-                              ignore_index=True)
-    else:
-        historial = pd.DataFrame([nueva_fila])
-    os.makedirs("data", exist_ok=True)
-    historial.to_csv(historial_path, index=False)
-
 def analizar_activo(ticker, activo_nombre, perfil):
     with st.spinner("Descargando datos históricos..."):
         import yfinance as yf
@@ -129,9 +109,6 @@ def analizar_activo(ticker, activo_nombre, perfil):
     prob_alcista = probabilidades[1]
 
     row = df.iloc[-1]
-
-    guardar_historial(ticker, activo_nombre, prob_alcista,
-                      prob_bajista, row["close"])
 
     señales = []
     if row["rsi"] < 35:     señales.append(1)
@@ -387,18 +364,21 @@ if st.button("🔍 Analizar ahora", use_container_width=True,
         st.bar_chart(prob_df.set_index("Dirección"))
 
         st.divider()
-        st.subheader("📋 Historial de análisis")
-        historial_path = "data/signals_history.csv"
-        if os.path.exists(historial_path):
-            hist_df = pd.read_csv(historial_path)
-            hist_df = hist_df.sort_values("fecha",
-                                          ascending=False).head(10)
-            hist_df.columns = ["Fecha", "Ticker", "Activo",
-                               "Prob. Alcista", "Prob. Bajista",
-                               "Precio entrada"]
-            st.dataframe(hist_df, use_container_width=True)
+        st.subheader("📋 Registro oficial de señales")
+        registro_path = "data/registro_senales.csv"
+        if os.path.exists(registro_path):
+            registro = pd.read_csv(registro_path, dtype={"fecha": str})
+            registro = registro[registro["ticker"] == resultado["ticker"]]
+            registro = registro.sort_values("fecha", ascending=False).head(10)
+            if registro.empty:
+                st.info("Aún no hay señales registradas para este activo.")
+            else:
+                st.dataframe(registro[["fecha", "senal", "prob_alcista",
+                                       "prob_bajista", "precio",
+                                       "resultado", "acierto"]],
+                             use_container_width=True)
         else:
-            st.info("El historial aparecerá aquí después del primer análisis.")
+            st.info("El registro aparecerá después de la primera señal diaria.")
 
         st.divider()
         st.warning(
