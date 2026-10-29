@@ -1,36 +1,48 @@
-# 📈 Signal Engine
+# 📈 Signal Engine (LatixIA)
 
-> Herramienta que combina indicadores técnicos, un modelo LightGBM y el sentimiento de titulares para estimar la probabilidad de que un activo suba al día siguiente.
+> Herramienta de análisis técnico educativo, con una prueba en vivo de un modelo de probabilidad para BTC-USD.
 
-🔗 **[Ver aplicación en vivo](https://latixia.streamlit.app)**
+🔗 **[Aplicación en vivo](https://latixia.streamlit.app)**
 
-> ⚠️ **Herramienta educativa. No es asesoría financiera.** Las probabilidades salen de patrones históricos y no garantizan resultados. Ver la sección de [Evaluación](#evaluación-honesta) antes de usarla para decidir algo.
-
----
-
-## ¿Qué hace?
-
-- **Probabilidad alcista/bajista** del día siguiente, con nivel de confianza.
-- **Indicadores técnicos** calculados sobre precios diarios: RSI, MACD, Bandas de Bollinger, ATR, volumen, medias móviles, OBV, VWAP y más (34 features usados por el modelo).
-- **Sentimiento de titulares** (RSS de Yahoo Finance) con un léxico de palabras positivas y negativas. No usa modelos de lenguaje.
-- **Registro diario de señales** para llevar una prueba hacia adelante (ver abajo).
-
-## Catálogo de activos
-
-El catálogo (`config/settings.py`) tiene 66 activos en 9 categorías: criptomonedas, acciones de EE. UU., Colombia, México, Brasil, Argentina, China, materias primas y otros. El dashboard solo permite elegir los que Yahoo Finance devuelve con datos suficientes.
-
-> **Limitación actual:** el modelo se entrena con **BTC-USD** y ese mismo modelo se aplica a todos los activos del dashboard. Para otros activos la probabilidad no está validada.
+> ⚠️ **No es una recomendación de compra ni de venta, ni asesoría financiera.** El modelo no ha demostrado una ventaja predictiva. Ver [Estado actual](#estado-actual).
 
 ---
+
+## Qué hace
+
+**1. Análisis técnico (dashboard)**
+Para cualquier activo del catálogo muestra precio, tendencia, volatilidad, RSI, MACD, posición en Bandas de Bollinger y volumen relativo, cada uno con una explicación de qué significa. También muestra titulares recientes.
+
+**2. Prueba en vivo de BTC-USD**
+Cada día, un proceso automático:
+1. descarga precios diarios,
+2. recalcula los indicadores y reentrena el modelo,
+3. registra la probabilidad de subida de mañana **antes** de conocer el resultado,
+4. califica las señales que ya tienen día siguiente.
+
+El registro está en `data/registro_senales.csv`. Es la única medición de rendimiento real del proyecto.
+
+## Estado actual
+
+| Pregunta | Respuesta honesta |
+|---|---|
+| ¿El modelo predice mejor que el azar? | **No se ha demostrado.** La accuracy fuera de muestra es 59.3% con 10 años de datos, pero una regla simple de reversión a la media acierta 52%, y una evaluación que empezaba en 2015 dio 52% para el modelo. El resultado depende del periodo que elijas. |
+| ¿El backtest es un buen indicador de ganancias? | **No.** La corrida de 10 años reporta +5.999% de retorno, con 378 operaciones y un Sharpe de 3.9. Eso no es creíble como pronóstico. No lo uses para decidir. |
+| ¿Qué se puede confiar? | Que los cálculos de los indicadores son correctos, que no hay fuga de datos del futuro en las features (tests), y que la prueba en vivo registra las señales antes del resultado. |
+| ¿Qué falta? | Al menos 60 señales calificadas en vivo, y luego evaluar si la accuracy supera al baseline de forma estable. |
+
+## Evaluación
+
+`python -m models.evaluar` hace una evaluación walk-forward (5 bloques, ventana expansiva, 1 día de separación entre entrenamiento y prueba), compara contra «siempre sube» y corre un backtest long/flat con costos. El control de azar desplaza las probabilidades en el tiempo y compara con esa distribución. Los resultados se guardan en `reportes/walkforward.json`.
+
+El backtest de `reportes/walkforward.json` no debe usarse para decidir nada: su retorno es demasiado alto para ser un pronóstico real. Sirve para verificar que el código de costos y posiciones funciona, no para medir ganancias.
 
 ## Instalación
 
 ```bash
-# Clonar y entrar
 git clone https://github.com/JFCB24/signal-engine.git
 cd signal-engine
 
-# Entorno virtual
 python -m venv venv
 venv\Scripts\activate        # Windows
 source venv/bin/activate     # Mac/Linux
@@ -38,53 +50,17 @@ source venv/bin/activate     # Mac/Linux
 pip install -r requirements.txt
 ```
 
-No hace falta ninguna API key: los titulares se leen del RSS público de Yahoo Finance.
+No hace falta ninguna API key: los titulares vienen del RSS público de Yahoo Finance.
 
 ## Uso
 
-Desde la raíz del proyecto, en este orden:
+Desde la raíz del proyecto:
 
 ```bash
-python -m data.collectors.price_collector        # descarga precios diarios
-python -m data.processors.feature_engineering    # calcula features
-python -m models.train                           # entrena el modelo de producción
-python -m models.predict                         # señal de hoy (y la registra)
-python -m models.evaluar                         # evaluación walk-forward + backtest
-streamlit run dashboard/app.py                   # dashboard
+python -m models.diario          # proceso diario completo (descarga, entrena, registra, califica)
+python -m models.evaluar         # evaluación walk-forward y backtest
+streamlit run dashboard/app.py   # dashboard
 ```
-
-## Evaluación honesta
-
-`python -m models.evaluar` hace lo siguiente:
-
-1. **Walk-forward con ventana expansiva:** 5 bloques de prueba consecutivos. Cada bloque se predice con un modelo entrenado solo con datos anteriores, dejando un día de separación.
-2. **Baselines:** "siempre sube" y la clase mayoritaria del entrenamiento.
-3. **Backtest long/flat** sobre las predicciones fuera de muestra: compra cuando la probabilidad alcista supera el umbral, con costo por cada cambio de posición.
-4. **Control de azar:** desplaza las probabilidades aleatoriamente (conserva la exposición y las rachas de señal, rompe la alineación con el precio) y compara el retorno real con esa distribución.
-
-Los resultados se guardan en `reportes/walkforward.json`. Los números que muestra el reporte son la referencia; no hay cifras fijas en este README.
-
-> El backtest cubre una sola ventana de tiempo. Un buen resultado ahí no garantiza nada hacia adelante.
-
-### Resultado de robustez (histórico completo de BTC-USD)
-
-La evaluación por defecto usa solo ~3 años de datos. Al correr la misma metodología con todo el histórico de BTC-USD (2015-05-26 a 2026-10-27, 4.173 filas etiquetadas, 5 bloques de prueba), el resultado **no se sostiene**:
-
-| Métrica | 3 años (`reportes/walkforward.json`) | Histórico completo |
-|---|---|---|
-| Accuracy del modelo (media ± desv.) | 57.8% ± 3.6% | 52.0% ± 1.5% |
-| Baseline "siempre sube" (media) | 49.1% | 49.5% |
-| Retorno estrategia | +98.3% | −23.3% |
-| Retorno comprar y mantener | −28.5% | +73.8% |
-| p-valor del control de azar | 0.000 | 0.598 |
-
-En el histórico completo, la estrategia no supera al azar con la misma exposición. El resultado de 3 años se explica por una ventana bajista en la que estar fuera del mercado fue lo correcto. **Hoy no hay evidencia de que el modelo tenga ventaja predictiva.**
-
-Este cálculo se hizo con un script temporal, no está en el repo; la configuración de producción sigue usando 3 años.
-
-## Registro de señales en vivo
-
-`models/predict.py` guarda cada señal en `data/registro_senales.csv`, una por activo y fecha, **antes** de conocer el resultado. `models/registro.py` puede calificarlas con el cierre del día siguiente. A diferencia de un backtest, este registro no se puede rehacer después.
 
 ## Tests
 
@@ -92,40 +68,44 @@ Este cálculo se hizo con un script temporal, no está en el repo; la configurac
 python -m pytest
 ```
 
-Los tests de `tests/` no usan red. Verifican que:
-
+Los tests no usan red. Verifican que:
 - las features no usen información futura (cambiar precios posteriores no altera features anteriores),
 - la última fila conserve datos para la inferencia,
 - el costo del backtest se cobre por cada cambio de posición,
 - el registro no duplique señales y califique con el cierre siguiente.
 
-`test_sistema.py` es una prueba de humo manual: comprueba archivos, datos, modelo y una predicción real, y usa la red para los titulares.
+`test_sistema.py` es una prueba de humo manual que usa la red para los titulares.
 
----
+## Automatización
 
-## Estructura del proyecto
+`.github/workflows/diario.yml` corre el proceso diario a las 00:30 UTC y guarda el registro en el repo. Se activa al subir el repo a GitHub.
+
+## Estructura
 
 ```
-├── config/
-│   └── settings.py                 # Activos, umbrales y parámetros
+├── config/settings.py              # Activos, umbrales y parámetros
 ├── data/
-│   ├── collectors/
-│   │   ├── price_collector.py      # Precios diarios (yfinance)
-│   │   └── news_collector.py       # Titulares (RSS) y sentimiento por léxico
-│   └── processors/
-│       └── feature_engineering.py  # Indicadores técnicos y etiqueta
+│   ├── collectors/                 # precios (yfinance) y titulares (RSS)
+│   ├── processors/feature_engineering.py
+│   └── registro_senales.csv        # prueba en vivo
 ├── models/
-│   ├── train.py                    # Modelo LightGBM de producción
-│   ├── predict.py                  # Señal del último día
-│   ├── evaluar.py                  # Walk-forward, baselines y backtest
-│   └── registro.py                 # Registro y calificación de señales
-├── backtesting/
-│   └── engine.py                   # Backtest long/flat con costos
-├── dashboard/
-│   └── app.py                      # Interfaz Streamlit
+│   ├── train.py                    # modelo LightGBM
+│   ├── predict.py                  # probabilidad del último día
+│   ├── evaluar.py                  # walk-forward, baselines y backtest
+│   ├── registro.py                 # registro y calificación
+│   └── diario.py                   # proceso diario
+├── backtesting/engine.py           # backtest long/flat con costos
+├── dashboard/app.py                # interfaz Streamlit
+├── reportes/walkforward.json       # última evaluación
 ├── tests/                          # pytest, sin red
-└── test_sistema.py                 # Prueba de humo manual
+└── .github/workflows/              # CI y proceso diario
 ```
+
+## Limitaciones conocidas
+
+- El modelo se entrena solo con BTC-USD. El dashboard no lo usa para otros activos.
+- El catálogo tiene al menos un ticker que Yahoo ya no reconoce (`ENIA`).
+- El sentimiento de titulares cuenta palabras positivas y negativas. No predice precios.
 
 ## Licencia
 
@@ -137,4 +117,4 @@ MIT License — © 2026 JFCB24. Ver [LICENSE](LICENSE).
 
 ## Disclaimer
 
-Este proyecto es una herramienta educativa. Las señales se basan en patrones históricos y no garantizan resultados futuros. No tomes decisiones financieras basadas únicamente en esta herramienta.
+Herramienta educativa. Las probabilidades se basan en patrones históricos y no garantizan resultados futuros. No tomes decisiones financieras basadas solo en esta herramienta.
