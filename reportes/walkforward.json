@@ -1,0 +1,83 @@
+{
+  "resumen": {
+    "ticker": "BTC-USD",
+    "bloques": 5,
+    "accuracy_modelo_media": 0.5781,
+    "accuracy_modelo_desv": 0.0364,
+    "baseline_siempre_sube_media": 0.4908,
+    "umbral_senal": 0.6,
+    "costo_operacion": 0.001
+  },
+  "bloques": [
+    {
+      "bloque": 1,
+      "desde": "2025-02-09",
+      "hasta": "2025-05-03",
+      "filas_prueba": 84,
+      "accuracy_modelo": 0.619,
+      "baseline_siempre_sube": 0.5119,
+      "baseline_mayoria_train": 0.5119
+    },
+    {
+      "bloque": 2,
+      "desde": "2025-05-04",
+      "hasta": "2025-07-26",
+      "filas_prueba": 84,
+      "accuracy_modelo": 0.5238,
+      "baseline_siempre_sube": 0.5476,
+      "baseline_mayoria_train": 0.5476
+    },
+    {
+      "bloque": 3,
+      "desde": "2025-07-27",
+      "hasta": "2025-10-18",
+      "filas_prueba": 84,
+      "accuracy_modelo": 0.6071,
+      "baseline_siempre_sube": 0.4762,
+      "baseline_mayoria_train": 0.4762
+    },
+    {
+      "bloque": 4,
+      "desde": "2025-10-19",
+      "hasta": "2026-01-10",
+      "filas_prueba": 84,
+      "accuracy_modelo": 0.5476,
+      "baseline_siempre_sube": 0.4762,
+      "baseline_mayoria_train": 0.4762
+    },
+    {
+      "bloque": 5,
+      "desde": "2026-01-11",
+      "hasta": "2026-04-06",
+      "filas_prueba": 86,
+      "accuracy_modelo": 0.593,
+      "baseline_siempre_sube": 0.4419,
+      "baseline_mayoria_train": 0.4419
+    }
+  ],
+  "backtest": {
+    "estrategia": {
+      "dias": 421,
+      "retorno_total": 0.9830582348245258,
+      "retorno_anual": 0.8104432120269958,
+      "sharpe": 2.4453636408035577,
+      "max_drawdown": -0.09975379661112005,
+      "operaciones": 126,
+      "dias_en_mercado": 0.2921615201900237
+    },
+    "comprar_y_mantener": {
+      "dias": 421,
+      "retorno_total": -0.28501269028134335,
+      "retorno_anual": -0.2523831555946172,
+      "sharpe": -0.40257233745098925,
+      "max_drawdown": -0.49736771801385704
+    },
+    "control_azar": {
+      "repeticiones": 500,
+      "retorno_real": 0.9830582348245258,
+      "retorno_azar_mediana": -0.19630692243645786,
+      "retorno_azar_p95": 0.1016722071946281,
+      "p_valor": 0.0
+    }
+  }
+}
