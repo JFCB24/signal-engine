@@ -106,6 +106,7 @@ Los tests no usan red. Verifican que:
 - El modelo se entrena solo con BTC-USD. El dashboard no lo usa para otros activos.
 - El catálogo tiene al menos un ticker que Yahoo ya no reconoce (`ENIA`).
 - El sentimiento de titulares cuenta palabras positivas y negativas. No predice precios.
+- La precisión del modelo se diagnosticó con `python -m models.diagnostico` (resultado en `reportes/diagnostico.txt`). No se encontró fuga de datos ni un error de código, pero tampoco se explica de dónde sale la ventaja.
 
 ## Licencia
 
