@@ -5,6 +5,20 @@ LOOKBACK_YEARS = 3
 TRAIN_SPLIT = 0.80
 HORIZON_HOURS = 24
 
+# Umbrales de decisión (usados por predict, dashboard y tests)
+UMBRAL_SENAL = 0.60            # prob. mínima para emitir ALCISTA o BAJISTA
+UMBRAL_CONFIANZA_ALTA = 0.70   # prob. mínima para confianza ALTA
+UMBRAL_CONFIANZA_MEDIA = 0.60  # prob. mínima para confianza MEDIA
+COSTO_OPERACION = 0.001        # comisión + slippage por cambio de posición (0.1%)
+
+# Perfiles del dashboard. Solo "Moderado" coincide con el umbral validado;
+# "Conservador" y "Agresivo" son supuestos sin backtest propio todavía.
+PERFILES_UMBRAL = {
+    "Conservador": 0.65,
+    "Moderado": UMBRAL_SENAL,
+    "Agresivo": 0.53,
+}
+
 FEATURES = [
     # Indicadores básicos
     "rsi",

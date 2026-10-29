@@ -136,10 +136,15 @@ def calcular_features(df):
     df["momentum_20"] = df["close"] / df["close"].shift(20) - 1
 
     # ── Label ────────────────────────────────────────────────
-    df["label"] = (df["close"].shift(-1) > df["close"]).astype(int)
+    # La última fila no tiene día siguiente: su label queda NaN (no 0).
+    # Se conserva para que la inferencia use el último día real;
+    # train.py descarta esas filas antes de entrenar.
+    siguiente = df["close"].shift(-1)
+    df["label"] = (siguiente > df["close"]).astype(float).where(siguiente.notna())
 
-    # Eliminar filas con NaN
-    df.dropna(inplace=True)
+    # Eliminar filas con NaN en las features (calentamiento de las ventanas)
+    columnas_features = [c for c in df.columns if c != "label"]
+    df.dropna(subset=columnas_features, inplace=True)
 
     return df
 

@@ -5,7 +5,10 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from config.settings import FEATURES, ACTIVOS, NOTICIAS_TERMINOS
+from config.settings import (
+    FEATURES, ACTIVOS, NOTICIAS_TERMINOS,
+    UMBRAL_SENAL, UMBRAL_CONFIANZA_ALTA, UMBRAL_CONFIANZA_MEDIA, PERFILES_UMBRAL,
+)
 from data.processors.feature_engineering import calcular_features
 from data.collectors.news_collector import obtener_noticias, analizar_sentimiento
 
@@ -148,20 +151,19 @@ def analizar_activo(ticker, activo_nombre, perfil):
                      consistencia * 0.3 +
                      estabilidad * 0.2)
 
-    if confianza_num >= 0.65:   confianza = "Alta"
-    elif confianza_num >= 0.55: confianza = "Media"
-    else:                        confianza = "Baja"
+    if confianza_num >= UMBRAL_CONFIANZA_ALTA:    confianza = "Alta"
+    elif confianza_num >= UMBRAL_CONFIANZA_MEDIA: confianza = "Media"
+    else:                                          confianza = "Baja"
 
     if atr_norm > 0.04:   riesgo = "Alto"
     elif atr_norm > 0.02: riesgo = "Medio"
     else:                  riesgo = "Bajo"
 
-    if prob_alcista >= 0.58:   señal = "ALCISTA"
-    elif prob_bajista >= 0.58: señal = "BAJISTA"
-    else:                       señal = "NEUTRAL"
+    if prob_alcista >= UMBRAL_SENAL:   señal = "ALCISTA"
+    elif prob_bajista >= UMBRAL_SENAL: señal = "BAJISTA"
+    else:                               señal = "NEUTRAL"
 
-    umbrales = {"Conservador": 0.65, "Moderado": 0.58, "Agresivo": 0.53}
-    umbral = umbrales[perfil]
+    umbral = PERFILES_UMBRAL[perfil]
 
     if señal == "ALCISTA" and prob_alcista >= umbral:
         recomendacion = "Condiciones favorables para entrar"

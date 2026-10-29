@@ -26,7 +26,7 @@ print(f"════════════════════════
 print(f"{BOLD}1. Librerías instaladas{RESET}")
 librerias = [
     "pandas", "yfinance", "lightgbm",
-    "sklearn", "streamlit", "transformers"
+    "streamlit", "requests"
 ]
 for lib in librerias:
     try:
@@ -86,7 +86,7 @@ else:
 
 # ── Test 5: Predicción real ───────────────────────────────
 print(f"\n{BOLD}5. Predicción de señal{RESET}")
-from config.settings import FEATURES
+from config.settings import FEATURES, UMBRAL_SENAL
 from data.processors.feature_engineering import calcular_features
 
 df = pd.read_csv(ruta_proc, index_col="Date", parse_dates=True)
@@ -96,8 +96,8 @@ probabilidades = modelo.predict_proba(ultima_fila)[0]
 prob_alcista = probabilidades[1]
 prob_bajista = probabilidades[0]
 
-if prob_alcista >= 0.58:   señal = "ALCISTA ▲"
-elif prob_bajista >= 0.58: señal = "BAJISTA ▼"
+if prob_alcista >= UMBRAL_SENAL:   señal = "ALCISTA ▲"
+elif prob_bajista >= UMBRAL_SENAL: señal = "BAJISTA ▼"
 else:                       señal = "NEUTRAL ◆"
 
 ok(f"Señal generada: {señal}")
