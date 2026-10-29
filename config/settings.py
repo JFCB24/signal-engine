@@ -154,7 +154,6 @@ ACTIVOS = {
         # ADR en NYSE
         "Banco Chile":      "BCH",
         "Banco Santander Chile": "BSAC",
-        "Enersis":          "ENIA",
         "ETF Chile":        "ECH",
     },
 
@@ -228,7 +227,6 @@ NOTICIAS_TERMINOS = {
     # Chile
     "BCH":          "Banco de Chile",
     "BSAC":         "Banco Santander Chile",
-    "ENIA":         "Enersis Chile energy",
     "ECH":          "Chile market economy",
     # Materias primas
     "GLD":          "gold price commodities",
