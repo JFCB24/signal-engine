@@ -66,6 +66,22 @@ Los resultados se guardan en `reportes/walkforward.json`. Los números que muest
 
 > El backtest cubre una sola ventana de tiempo. Un buen resultado ahí no garantiza nada hacia adelante.
 
+### Resultado de robustez (histórico completo de BTC-USD)
+
+La evaluación por defecto usa solo ~3 años de datos. Al correr la misma metodología con todo el histórico de BTC-USD (2015-05-26 a 2026-10-27, 4.173 filas etiquetadas, 5 bloques de prueba), el resultado **no se sostiene**:
+
+| Métrica | 3 años (`reportes/walkforward.json`) | Histórico completo |
+|---|---|---|
+| Accuracy del modelo (media ± desv.) | 57.8% ± 3.6% | 52.0% ± 1.5% |
+| Baseline "siempre sube" (media) | 49.1% | 49.5% |
+| Retorno estrategia | +98.3% | −23.3% |
+| Retorno comprar y mantener | −28.5% | +73.8% |
+| p-valor del control de azar | 0.000 | 0.598 |
+
+En el histórico completo, la estrategia no supera al azar con la misma exposición. El resultado de 3 años se explica por una ventana bajista en la que estar fuera del mercado fue lo correcto. **Hoy no hay evidencia de que el modelo tenga ventaja predictiva.**
+
+Este cálculo se hizo con un script temporal, no está en el repo; la configuración de producción sigue usando 3 años.
+
 ## Registro de señales en vivo
 
 `models/predict.py` guarda cada señal en `data/registro_senales.csv`, una por activo y fecha, **antes** de conocer el resultado. `models/registro.py` puede calificarlas con el cierre del día siguiente. A diferencia de un backtest, este registro no se puede rehacer después.
